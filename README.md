@@ -77,10 +77,9 @@ Download the annotation file of DNA methylation microarray chips from Illumina.
   
   - Access the webpage: https://support.illumina.com/downloads/infinium-methylationepic-v1-0-product-files.html
   
-  - Click on the hyperlink `Infinium MethylationEPIC v1.0 B4 Manifest File (CSV Format)`. The downloaded file is named as `infinium-methylationepic-v-1-0-b4-manifest-file-csv.zip`  and can be unzipped to get  `MethylationEPIC_v-1-0_B4.csv`
+  - Click on the hyperlink `Infinium MethylationEPIC v1.0 B4 Manifest File (CSV Format)`. The downloaded file is named as `infinium-methylationepic-v-1-0-b4-manifest-file-csv.zip`  and can be unzipped to get  `HumanMethylation450MethylationEPIC_v-1-0_B4.csv`
   
   - Copy it to `./raw_data/AD/`
-    . HumanMethylation450
   
   - Access the webpage: https://support.illumina.com/downloads/infinium_humanmethylation450_product_files.html
   
@@ -137,8 +136,7 @@ python main_simu.py \
 cd ./CDReg
 python main_app.py \
     --data_name LUAD \
-    --L1 0.5 --L21 0.2 --Ls 1.2 --Lc 0.3 --lr 0.001 \
-    --data_dir /home/data/tangxl/ContrastSGL/casecontrol_data
+    --L1 0.5 --L21 0.2 --Ls 1.2 --Lc 0.3 --lr 0.001
 ```
 
 ## AD
@@ -147,8 +145,7 @@ python main_app.py \
 cd ./CDReg
 python main_app.py \
     --data_name AD --batch_size 501 \
-    --L1 0.15 --L21 0.04 --Ls 0.5 --Lc 1.2 --lr 0.001 \
-    --data_dir /home/data/tangxl/ContrastSGL/casecontrol_data
+    --L1 0.15 --L21 0.04 --Ls 0.5 --Lc 1.2 --lr 0.001
 ```
 
 ## Classification
