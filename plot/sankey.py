@@ -1,3 +1,4 @@
+
 import os
 import pickle
 import scipy
@@ -9,8 +10,16 @@ import pyecharts.options as opts
 from pyecharts.charts import Sankey
 
 
-data = pd.read_excel('./Results_LUAD.xlsx', sheet_name='Top50-vsLcon0')
-data = data.iloc[:, :7]
+data = pd.read_csv('./LUAD/Lcon_merge.csv')
+alias = {
+    'FLJ22536': 'CASC15',
+    'KCNA1': 'Kv1.1',
+    'RTN1': 'NSP',
+    'RTN4RL1': 'NgR3',
+    'KCNJ12':'Kir2.2',
+}
+data['Gene'] = data['gene_set'].apply(lambda x: alias[x] if x in alias else x)
+data.rename({'ours_rank': 'w C', 'Lcon_rank': 'w/o C'}, axis=1, inplace=True)
 
 
 nodes = [{'name': kk} for kk in data['IlmnID']] + list(sorted(set(data['Gene']))) + ['w C', 'w/o C']
