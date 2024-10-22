@@ -8,8 +8,8 @@ import re
 def main():
     out_dir = './../../data/AD/'
     # raw_dir = './../../raw_data/AD/'
-    out_dir0 = '/home/data/public_data/AD_methy/ADNI_selfpre/'
-    raw_dir = '/home/data/public_data/AD_methy/ADNI_raw/'
+    out_dir0 = '/'
+    raw_dir = '/'
     loc_dir = os.path.join(out_dir, 'HumanMethylation850_probe_chr_loc_sort.csv')
     chr_loc(os.path.join(raw_dir, 'MethylationEPIC_v-1-0_B4.csv'), loc_dir)  # get loc.csv file
 

@@ -111,7 +111,13 @@ def main():
     io = args.io
     logger = tb_logger.Logger(logdir=args.tbfolder, flush_secs=2)
 
-    data = MethylationData(os.path.join(args.data_dir, args.data_name, 'group_gene'), args.data_name, args.device)
+    if 'cov' in args.data_name or args.data_name in ['LUAD', 'AD']:
+        data = MethylationData(os.path.join(args.data_dir, args.data_name, 'group_gene'), args.data_name, args.device)
+    elif args.data_name.startswith('CHR'):
+        data = MethylationData(args.data_dir, args.data_name, args.device)
+    else:
+        raise ValueError('Data not found')
+
     loader = Dataloader(data)
     train_loader = loader.get_pair(args.batch_size, partition='train', shuffle=True)
     model = ContrastiveSGL(dim_in=data.feature_num, dim_emb=int(data.feature_num / 4), device=args.device,
@@ -121,6 +127,9 @@ def main():
         model.calculate_graph_X(X=loader.get_whole()[0], locs=data.locs, gp_idx_list=data.gp_idx_list,
                                 Gkind=(args.Gkind if args.Ls else ''), gamma=args.gamma)
     elif args.data_name == 'AD':
+        model.calculate_graph_X(X=data.Xall, locs=data.locs, gp_idx_list=data.gp_idx_list,
+                                Gkind=(args.Gkind if args.Ls else ''), gamma=args.gamma)
+    elif args.data_name.startswith('CHR'):
         model.calculate_graph_X(X=data.Xall, locs=data.locs, gp_idx_list=data.gp_idx_list,
                                 Gkind=(args.Gkind if args.Ls else ''), gamma=args.gamma)
     model.to(args.device)
@@ -170,7 +179,7 @@ def main():
 
     ''' Evaluate on feature selection performance '''
     io.cprint('Evaluate performances.')
-    data, fea_info, individuals = get_data(os.path.join(args.data_dir, args.data_name, 'group_gene'), args.data_name)
+    data, fea_info, individuals = get_data(args.data_dir, args.data_name)
     sco = pd.read_csv(os.path.join(args.save_dir, 'fea_scores.csv'))
     sco = sco.iloc[:, [0, sco.shape[1] - 1]]
     eval_FS(data, fea_info, individuals, sco, result_dir=args.save_dir)

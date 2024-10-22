@@ -46,6 +46,17 @@ class MethylationData(data.Dataset):
             self.fea_name = self.fea_info['IlmnID'].values
             self.gp_info = self.fea_info['gp_idx'].values
             self.gp_idx_list = [np.where(self.gp_info == xx)[0] for xx in np.unique(self.gp_info)]
+        elif data_name.startswith('CHR'):
+            pair_train = np.load(os.path.join(self.root, 'pairMatrix.npy'))
+            self.pair = np.zeros((len(self.Xall), len(self.Xall)))
+            self.pair[:len(pair_train), :len(pair_train)] = pair_train
+            self.fea_info = pd.read_csv(os.path.join(self.root, 'sites.csv'))
+            # #chr	start	end	probe	gene	gene_num    pvalue	pFDR	gp_size	gp_idx0	gp_idx
+            self.fea_idxes = self.fea_info.index.values
+            self.locs = self.fea_info['start'].values
+            self.fea_name = self.fea_info['probe'].values
+            self.gp_info = self.fea_info['gp_idx'].values
+            self.gp_idx_list = [np.where(self.gp_info == xx)[0] for xx in np.unique(self.gp_info)]
         else:
             raise ValueError(data_name)
 
@@ -90,7 +101,7 @@ class Dataloader:
     def __init__(self, dataset):
         self.dataset = dataset
 
-        if 'cov' in self.dataset.data_name or self.dataset.data_name == 'AD':
+        if 'cov' in self.dataset.data_name or self.dataset.data_name == 'AD' or self.dataset.data_name.startswith('CHR'):
             self.train_idx_list, self.test_idx_list = [np.arange(len(self.dataset.Yall))], []
 
         elif self.dataset.data_name == 'LUAD':
@@ -113,8 +124,6 @@ class Dataloader:
     def get_pair(self, batch_size, partition, shuffle=True):
         if partition == 'train':
             dataset = SubData(self.dataset, self.train_idx_list[0])
-        elif partition == 'test':
-            dataset = SubData(self.dataset, self.test_idx_list[0])
         else:
             raise ValueError
 

@@ -7,10 +7,10 @@ import re
 
 def main():
     out_dir = './../../data/LUAD/'
-    out_dir0 = '/home/data/tangxl/ContrastSGL/casecontrol_data/LUAD'
-    pre_dir = '/home/data/public_data/TCGA_cancer_data/pre_result_202012/'
+    out_dir0 = '/'
+    pre_dir = '/'
     # loc_dir = os.path.join(out_dir, 'HumanMethylation450_probe_chr_loc_sort.csv')
-    loc_dir = '/home/data/tangxl/ContrastSGL/casecontrol_data/LUAD/HumanMethylation450_probe_chr_loc_sort.csv'
+    loc_dir = '/'
 
     # # 1. extract LUAD data
     # final_d, part_tcga, part_geo = extract_data(loc_dir, pre_dir)

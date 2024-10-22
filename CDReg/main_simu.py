@@ -78,7 +78,7 @@ def build_args():
     args.model_name = 'L1{:g}L21{:g}Ls{:g}Lc{:g}_lr{:g}'.format(
         args.L1, args.L21, args.Ls, args.Lc, args.lr)
 
-    args.device = get_device()
+    args.device = set_gpu()
     args.save_dir = os.path.join(args.save_dir, args.data_name, args.model_name, f's{args.seed}')
     os.makedirs(args.save_dir, exist_ok=True)
     args.tbfolder = os.path.join(args.save_dir, 'tensorboard')
@@ -94,6 +94,7 @@ def build_args():
     argsDict = args.__dict__
     with open(os.path.join(args.save_dir, 'log.txt'), 'w') as f:
         f.writelines('------------------ start ------------------' + '\n')
+        f.writelines(time.asctime(time.localtime(time.time())) + '\n')
         for eachArg, value in argsDict.items():
             f.writelines(eachArg + ' : ' + str(value) + '\n')
         f.writelines('------------------- end -------------------' + '\n')
@@ -107,6 +108,7 @@ def main():
     args = build_args()
     # assert args.Lc > 0
     set_seed(args)
+
     # log, tensorboard
     io = args.io
     logger = tb_logger.Logger(logdir=args.tbfolder, flush_secs=2)

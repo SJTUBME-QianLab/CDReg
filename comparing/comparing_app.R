@@ -9,7 +9,6 @@ library("SGL")
 library("pclogit")
 
 data_dir_root = "./../data/"
-data_dir = paste0(data_dir_root, data_name, "/group_gene/")
 out_dir = paste0("./../results/",data_name,"/3m_default100_0.0001/")
 
 if (!dir.exists(out_dir)){
@@ -20,28 +19,36 @@ method = "gaussian"
 set.seed(seed)
 
 #### load data ####
-X = read.table(paste0(data_dir, "X_normL2.csv"), sep=",", header=F)
-Y = read.table(paste0(data_dir, "Y.csv"), sep=",", header=F)
-if (data_name == 'LUAD') {
-  train_idx = c(1:492)
-} else if (data_name == 'AD'){
-  # test_idx0 = read.table(paste0(data_dir, "/test_idx/", fold, ".txt"), header=F)
-  # test_idx = as.matrix(test_idx0 + 1)
-  # train_idx = setdiff(1: dim(X)[1], test_idx)
-  train_idx = c(1:dim(X)[1])
+if (data_name == 'LUAD' | data_name == 'AD') {
+  data_dir = paste0(data_dir_root, data_name, "/group_gene/")
+  X = read.table(paste0(data_dir, "X_normL2.csv"), sep=",", header=F)
+  Y = read.table(paste0(data_dir, "Y.csv"), sep=",", header=F)
+  if (data_name == 'LUAD'){
+    train_idx = c(1:492)
+    X_train = X[train_idx, ]
+    Y_train = Y[train_idx, ]
+  } else if (data_name == 'AD'){
+    X_train = X
+    Y_train = Y
+  }
+  basic_info = read.table(paste0(data_dir, "info.csv"), sep=",", header=T)
+  group = as.numeric(as.matrix(basic_info$gp_idx)[-1])
+  fea_name = basic_info$IlmnID[-1]
+} else if (grep('^CHR\\w+', data_name)) {
+  data_dir = paste0(data_dir_root, data_name)
+  X = read.table(paste0(data_dir, "X_normL2.csv"), sep=",")
+  Y = read.table(paste0(data_dir, "Y.csv"), sep=",")
+  X_train = X
+  Y_train = as.matrix(Y)
+  basic_info = read.table(paste0(data_dir, "sites.csv"), sep=",", header=T, comment.char="")
+  group = as.numeric(as.matrix(basic_info$gp_idx))
+  fea_name = basic_info$probe
 } else {
   stop("wrong data_name")
 }
 
-X_train = X[train_idx, ]
-Y_train = Y[train_idx, ]
-
-basic_info = read.table(paste0(data_dir, "info.csv"), sep=",", header=T)
-group = as.numeric(as.matrix(basic_info$gp_idx)[-1])
-fea_name = basic_info$IlmnID[-1]
-
 #### Resample 100 times for Selection Probability ####
-p = dim(X)[2]
+p = dim(X_train)[2]
 resample_time = 1
 resample_rate = 1
 fea_prob = matrix(0, p, resample_time)

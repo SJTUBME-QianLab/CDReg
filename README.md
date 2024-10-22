@@ -2,7 +2,7 @@
 
 This repository holds the code for the paper
 
-**Causal-aware candidate identification for resource-efficient DNA methylation biomarker discovery**
+**Causality-driven candidate identification for reliable DNA methylation biomarker discovery**
 
 All the materials released in this library can **ONLY** be used for **RESEARCH** purposes and not for commercial use.
 
@@ -14,11 +14,38 @@ Xinlu Tang, Rui Guo, Zhanfeng Mo, Wenli Fu, and Xiaohua Qian
 
 # Abstract
 
-Despite vast data support in DNA methylation (DNAm) biomarker discovery to facilitate health-care research, this field faces huge resource barriers due to preliminary unreliable candidates and the consequent compensations using expensive experiments. The underlying challenges lie in the confounding factors, especially measurement noise and individual characteristics. To achieve reliable identification of a candidate pool for DNAm biomarker discovery, we propose a causal-aware deep regularization (CDReg) framework. It innovatively integrates causality, deep learning, and biological priors to handle non-causal confounding factors, through a contrastive scheme and a spatial-relation regularization that reduces interferences from individual characteristics and noises, respectively. The comprehensive reliability, attributed to the specific challenge-solving ability, of CDReg was verified by simulations, applications on cancer tissue, and explorations for blood samples on neurological disease, highlighting its biomedical significance. Overall, this study offers a novel causal-deep-learning-based perspective with a compatible tool for reliable candidate identification to achieve resource-efficient DNAm biomarker discovery.
+Despite vast data support in DNA methylation (DNAm) biomarker discovery to facilitate health-care research, this field faces huge resource barriers due to preliminary unreliable candidates and the consequent compensations using expensive experiments. The underlying challenges lie in the confounding factors, especially measurement noise and individual characteristics. To achieve reliable identification of a candidate pool for DNAm biomarker discovery, we propose a Causality-driven Deep Regularization (CDReg) framework to reinforce correlations that are suggestive of causality with disease. It integrates causal thinking, deep learning, and biological priors to handle non-causal confounding factors, through a contrastive scheme and a spatial-relation regularization that reduces interferences from individual characteristics and noises, respectively. The comprehensive reliability of CDReg was verified by simulations and applications involving various human diseases, sample origins, and sequencing technologies, highlighting its universal biomedical significance. Overall, this study offers a causal-deep-learning-based perspective with a compatible tool to identify reliable DNAm biomarker candidates, promoting resource-efficient biomarker discovery.
 
-# Requirements
+# System requirements and installation
 
-Our code is mainly based on **Python 3.8.12** and **PyTorch 1.10.1**. The corresponding environment may be created via conda as follows:
+## Hardware requirements
+
+Our `CDReg` method requires only a standard computer with enough RAM to support the in-memory operations.
+
+## OS Requirements
+
+Our code has been tested on the following systems:
+
+- Windows 10
+- Linux: Ubuntu 18.04
+
+## Dependencies
+
+Our code is mainly based on **Python 3.8.19** and **PyTorch 1.10.1**.
+
+Other useful Python libraries:
+
+- NumPy
+
+- pandas
+
+- scikit-learn
+
+- SciPy
+
+## Environment
+
+The environment can be created via conda as follows:
 
 ```shell
 conda env create -f ./environment.yaml
@@ -69,6 +96,14 @@ The AD dataset is obtained from the ADNI database: http://adni.loni.usc.edu . Ac
 
 - Unzip it and copy the file named `TADPOLE_D1_D2.csv` to `./raw_data/TADPOLE`
 
+## PC
+
+The PC data profiled by WGBS was obtained from MethBank (https://ngdc.cncb.ac.cn/methbank/) with the Project ID HRA000099.
+
+- Download files using wget: `./preprocessing/PC/download.sh`
+
+- Download sample information from https://ngdc.cncb.ac.cn/methbank/samples?q=HRA000099
+
 ## Chip annotation
 
 Download the annotation file of DNA methylation microarray chips from Illumina.
@@ -80,12 +115,20 @@ Download the annotation file of DNA methylation microarray chips from Illumina.
   - Click on the hyperlink `Infinium MethylationEPIC v1.0 B4 Manifest File (CSV Format)`. The downloaded file is named as `infinium-methylationepic-v-1-0-b4-manifest-file-csv.zip`  and can be unzipped to get  `HumanMethylation450MethylationEPIC_v-1-0_B4.csv`
   
   - Copy it to `./raw_data/AD/`
+
+- HumanMethylation450
   
   - Access the webpage: https://support.illumina.com/downloads/infinium_humanmethylation450_product_files.html
   
   - Click on the hyperlink `HumanMethylation450 v1.2 Manifest File (CSV Format)`. The downloaded file is named as `humanmethylation450_15017482_v1-2.csv` 
   
   - Copy it to `./raw_data/LUAD/`
+
+## Gencode
+
+- Download genecode V27 from http://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/
+
+- Run script `./preprocessing/PC/download.sh` to obtain `allGene.hg38.position`
 
 # Data processing
 
@@ -119,6 +162,12 @@ R --no-save < probe_pval.R
 python AD_pre.py
 ```
 
+## PC
+
+```bash
+python PC_pre.py
+```
+
 # Running
 
 ## Simulation
@@ -130,6 +179,8 @@ python main_simu.py \
     --L1 0.4 --L21 0.05 --Ls 1.2 --Lc 0.1 --lr 0.0001
 ```
 
+Expected output: `info.csv`, `eval_FS1.xlsx`.
+
 ## LUAD
 
 ```bash
@@ -138,6 +189,8 @@ python main_app.py \
     --data_name LUAD \
     --L1 0.5 --L21 0.2 --Ls 1.2 --Lc 0.3 --lr 0.001
 ```
+
+Expected output: `info.csv`, `final_50_eval1.xlsx`, `eval_FS1.xlsx`, `pred_epoch.csv`, `fea_scores.csv`
 
 ## AD
 
@@ -148,11 +201,21 @@ python main_app.py \
     --L1 0.15 --L21 0.04 --Ls 0.5 --Lc 1.2 --lr 0.001
 ```
 
+## PC
+
+```bash
+cd ./CDReg
+python main_app.py \
+    --data_name CHR20p0.05gp20 \
+    --L1 0.5 --L21 0.1 --Ls 1.2 --Lc 1 --lr 0.0001
+```
+
 ## Classification
 
 ```bash
-python independent_test.py --data_name AD --test_type resample
-python independent_test.py --data_name LUAD --test_type resample
+python post_test.py --data_name AD
+python post_test.py --data_name LUAD
+python post_test.py --data_name CHR20p0.05gp20
 ```
 
 # Comparing methods
@@ -161,25 +224,24 @@ python independent_test.py --data_name LUAD --test_type resample
 
 Comparing methods are implemented using R version 4.0.4 with the following required packages:
 
-- Matrix
+- glmnet 4.1.3
 
-- glmnet
+- SGL 1.3
 
-- grpreg
+- pclogit 0.1
 
-- SGL
+- minfi 1.36.0
 
-- pclogit
+- DMRcate 2.4.1
 
-## Run commands:
+## Run commands (examples):
 
 ```bash
 cd ./comparing
 R --no-save < comparing_app.R LUAD
-python eval_R_app.py --data_name LUAD --set_name 3m_default100_0.0001
-
-R --no-save < comparing_app.R AD
-python eval_R_app.py --data_name AD --set_name 3m_default100_0.0001
+R --no-save < other_app.R LUAD
+python eval_R_app.py --data_name LUAD
+python post_test.py --data_name LUAD
 
 R --no-save < comparing_simu.R covLap2_de1_b0.5_seed2027 1 LASSO
 python eval_R.py --data_name covLap2_de1_b0.5_seed2027 --seed 1 --method LASSO
@@ -187,7 +249,7 @@ python eval_R.py --data_name covLap2_de1_b0.5_seed2027 --seed 1 --method LASSO
 
 # Reproducibility
 
-`./reproducibility`
+`cd ./reproducibility`
 
 - Generate simulation data: `batch_generate_simulation.py`
 
@@ -195,9 +257,7 @@ python eval_R.py --data_name covLap2_de1_b0.5_seed2027 --seed 1 --method LASSO
 
 # Figures
 
-- Results for figures were saved in `Results_simu.xlsx`, `Results_LUAD.xlsx`, and `Results_AD.xlsx`
-
-- Fig. 3-5, Extended Data Fig. 1, and Supplementary Fig. 1 can be generated by the codes in `./plot/`
+- Fig. 3-5 and Supplementary Figs. S1-S5 can be generated using the codes in `./plot/`
 
 # Contact
 

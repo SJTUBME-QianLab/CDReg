@@ -89,7 +89,7 @@ def adjust_mask_ratio(epoch, args):
         io.cprint('Final Tune Epoch {}, Mask Ratio {:2.3f}, lr{}:'.format(epoch, args.mr, args.lr))
 
 
-def get_device():
+def set_gpu():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     return device
 
@@ -165,9 +165,9 @@ def evaluate(prob, true_onehot=None, true=None):
 
 def evaluate_pred(pred, true):
     acc = sklearn.metrics.accuracy_score(true, pred)
-    recall = sklearn.metrics.recall_score(true, pred, average='macro')
-    precision = sklearn.metrics.precision_score(true, pred, average='macro')
-    f1score = sklearn.metrics.f1_score(true, pred, average='macro')
+    recall = sklearn.metrics.recall_score(true, pred, average='macro', zero_division=0)
+    precision = sklearn.metrics.precision_score(true, pred, average='macro', zero_division=0)
+    f1score = sklearn.metrics.f1_score(true, pred, average='macro', zero_division=0)
     tn, fp, fn, tp = sklearn.metrics.confusion_matrix(true, pred).ravel()
     specificity = tn / (tn + fp)
 
@@ -196,3 +196,33 @@ def concat_list(fea_scores_list):
 
     return opt_fea_scores, att
 
+
+def rank_vector(vec, method='min', descending=True):
+    # Convert the list to a numpy array
+    vec = np.array(vec)
+
+    # Get the sorted indices in descending order
+    if descending:
+        vec = np.where(np.isnan(vec), 0, vec)  # nan -> 0
+        sorted_indices = np.argsort(-vec)  # default: from large to small
+    else:
+        vec = np.where(np.isnan(vec), np.inf, vec)  # nan -> inf
+        sorted_indices = np.argsort(vec)  # from small to large
+
+    # Initialize ranks array
+    ranks = np.empty_like(sorted_indices, dtype=float)
+    ranks[sorted_indices] = np.arange(1, len(vec) + 1)
+
+    if method == 'min':
+        for i in range(len(vec)):
+            ranks[np.isclose(vec, vec[i])] = ranks[np.isclose(vec, vec[i])].min()
+    elif method == 'max':
+        for i in range(len(vec)):
+            ranks[np.isclose(vec, vec[i])] = ranks[np.isclose(vec, vec[i])].max()
+    elif method == 'ave':
+        for i in range(len(vec)):
+            ranks[np.isclose(vec, vec[i])] = ranks[np.isclose(vec, vec[i])].mean()
+    else:
+        raise ValueError("Method must be 'min' or 'ave'")
+
+    return ranks.tolist()

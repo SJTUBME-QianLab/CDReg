@@ -1,8 +1,7 @@
 import numpy as np
 import os
 import time
-from tools.utils import *
-
+import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder
 from sklearn.svm import SVC
@@ -11,6 +10,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier
+
+from tools.utils import *
 
 
 class TrainTestConNegMask:
@@ -281,12 +282,12 @@ def eval_6clf(idx, fea_name, fea_ind, loc, ch_label, data):
     return df_all, info
 
 
-def eval_FS(data, fea_info, individuals, sco, result_dir, top_num=30):
+def eval_FS(data, fea_info, individuals, sco, result_dir, top_num=30, choice=0):
     if data is not None:  # LUAD
         df_all_eval, final_weight, sparsity = performance_app(sco, data, fea_info, top_num=top_num)
         assert df_all_eval is not None
 
-        pd_writer = pd.ExcelWriter(os.path.join(result_dir, 'final_%d_eval0.xlsx' % top_num))
+        pd_writer = pd.ExcelWriter(os.path.join(result_dir, 'final_%d_eval.xlsx' % top_num))
         acc_TF = []
         for i, df in df_all_eval.items():
             df.to_excel(pd_writer, index=False, index_label=True, sheet_name=i)
@@ -314,10 +315,10 @@ def eval_FS(data, fea_info, individuals, sco, result_dir, top_num=30):
         pd_writer.save()
 
     if (data is None) and (individuals is not None):  # simu
-        final_weight, metric_i = performance(sco, fea_info, individuals)
+        final_weight, metric_i = performance(sco, fea_info, individuals, choice=choice)
         df_groupby1, df_groupby2, df_true_std = group_check(fea_info, final_weight)
 
-        pd_writer = pd.ExcelWriter(os.path.join(result_dir, 'eval_FS.xlsx'))
+        pd_writer = pd.ExcelWriter(os.path.join(result_dir, f'eval_FS{choice}.xlsx'))
         final_weight.to_excel(pd_writer, index=False, index_label=True, sheet_name="final_weight")
         metric_i.to_excel(pd_writer, index=False, index_label=True, sheet_name="metrices")
         df_groupby1.to_excel(pd_writer, index=True, index_label=True, sheet_name="group_check1")
@@ -328,13 +329,12 @@ def eval_FS(data, fea_info, individuals, sco, result_dir, top_num=30):
 
 def get_data(data_dir, data_name):
     if 'cov' in data_name:
-        # test_idx = np.loadtxt(os.path.join(data_dir, data_name, 'test_idx', '%d.txt' % fold)).astype(int)
-        # train_idx = np.array(list(set(np.arange(len(Yall))) - set(test_idx)), dtype=int)
         data = None
         fea_info = pd.read_csv(os.path.join(data_dir, data_name, 'basic_info.csv')).iloc[:, 1:]
         # fea_name, gp_label, loc, true_01, isol_01, beta
         individuals = np.load(os.path.join(data_dir, data_name, 'spac_idx.npy'))
     elif data_name == 'LUAD':
+        data_dir = os.path.join(data_dir, data_name, 'group_gene')
         Xall = np.load(os.path.join(data_dir, 'X_normL2.npy'))
         Yall = np.load(os.path.join(data_dir, 'Y.npy'))
         assert len(Xall) == (492 + 183)
@@ -345,11 +345,14 @@ def get_data(data_dir, data_name):
         # IlmnID,gene_set,gene_num,UCSC_RefGene_Name,CHR,MAPINFO,gp_size,gp_idx
         individuals = None
     elif data_name == 'AD':
-        # test_idx = np.loadtxt(os.path.join(data_dir, 'test_idx', '%d.txt' % fold)).astype(int)
-        # train_idx = np.array(list(set(np.arange(len(Yall))) - set(test_idx)), dtype=int)
+        data_dir = os.path.join(data_dir, data_name, 'group_gene')
         data = None
         fea_info = pd.read_csv(os.path.join(data_dir, 'info.csv')).iloc[1:, :]
         # IlmnID,gene_set,gene_num,UCSC_RefGene_Name,CHR,MAPINFO,gp_size,gp_idx
+        individuals = None
+    elif data_name.startswith('CHR'):
+        data = None
+        fea_info = pd.read_csv(os.path.join(data_dir, data_name, 'info.csv'))
         individuals = None
     else:
         raise ValueError(data_name)
@@ -357,7 +360,7 @@ def get_data(data_dir, data_name):
     return data, fea_info, individuals
 
 
-def performance(sco, fea_info, individuals):
+def performance(sco, fea_info, individuals, descending=True, choice=0):
     fea_name = fea_info['fea_name'].values
     fea_idxes = fea_info.index.values
     locs = fea_info['loc'].values
@@ -369,9 +372,9 @@ def performance(sco, fea_info, individuals):
 
     sco.columns = ['index', 'final_weight']
     sco.insert(loc=2, column='abs_weight', value=abs(sco['final_weight']))
-    sco_rank = sco.sort_values(['abs_weight'], ascending=False, kind='mergesort').reset_index(drop=True)
-
-    # slc_idx = np.hstack([sco_rank['index'][:top_num], sco_rank['index'][int(np.sum(TorF))]])
+    if choice == 1:
+        sco.insert(loc=3, column='rank_ave', value=rank_vector(sco['abs_weight'], 'ave', descending))
+        sco.insert(loc=4, column='rank_min', value=rank_vector(sco['abs_weight'], 'min', descending))
 
     # basic info
     info = pd.DataFrame({
@@ -384,16 +387,23 @@ def performance(sco, fea_info, individuals):
     info = pd.merge(info, sco, left_on='fea_ind', right_on='index').drop(['index'], axis=1, inplace=False)
 
     # Feature selection performance
-    true_beta_df = pd.DataFrame({'true_beta': true_beta, 'indi01': indi01})
+    true_beta_df = pd.DataFrame({'true_beta': true_beta, 'indi01': indi01, 'isol01': fea_info['isol_01'].values})
     # TorF = (abs(beta) > 0).astype(float)
     true_beta_df.insert(1, 'TorF', TorF)
     final_weight = pd.concat([info, true_beta_df], axis=1)
+    min_ = np.min(final_weight['abs_weight'])
+    max_ = np.max(final_weight['abs_weight'])
+    if descending:
+        value = [(x - min_) / (max_ - min_) for x in final_weight['abs_weight']]
+    else:
+        value = [(max_ - x) / (max_ - min_) for x in final_weight['abs_weight']]
     final_weight.insert(loc=list(final_weight.columns).index('abs_weight') + 1,
                         column='abs_weight_normalize',
-                        value=final_weight[['abs_weight']].apply(lambda x: (x - np.min(x)) / (np.max(x) - np.min(x)),
-                                                                 axis=0))
+                        value=value)
 
     pred_top = np.zeros((1, len(TorF)))
+    sco_rank = sco.sort_values(['abs_weight'], ascending=not descending, kind='mergesort').reset_index(drop=True)
+    # slc_idx = np.hstack([sco_rank['index'][:top_num], sco_rank['index'][int(np.sum(TorF))]])
     slc_idx = sco_rank['index'][:int(np.sum(TorF))]
     pred_top[0, slc_idx] = 1
     prob_1 = final_weight['abs_weight_normalize']
@@ -403,27 +413,40 @@ def performance(sco, fea_info, individuals):
     TPR = np.sum((pred_top * TorF)) / np.sum(TorF)
     sparsity = np.sum(final_weight['abs_weight'] > 0) / len(final_weight)
 
-    indi_weight = final_weight.loc[individuals, 'abs_weight_normalize'].mean()
-
-    metric_i = pd.DataFrame(np.array([[TPR, sparsity, indi_weight] + metric_i]),
-                            columns=['top-TPR', 'sparsity', 'indi_abs_w_mean',
-                                     'acc', 'roc_auc', 'recall', 'precision', 'f1score', 'specificity'])
+    if choice == 0:
+        indi_weight = final_weight.loc[individuals, 'abs_weight_normalize'].mean()
+        metric_i = pd.DataFrame(np.array([[TPR, sparsity, indi_weight] + metric_i]),
+                                columns=['top-TPR', 'sparsity', 'indi_abs_w_mean',
+                                         'acc', 'roc_auc', 'recall', 'precision', 'f1score', 'specificity'])
+    elif choice == 1:
+        indi_weight = final_weight.loc[individuals, 'abs_weight_normalize'].mean()
+        indi_rank_ave = final_weight.loc[individuals, 'rank_ave'].mean()
+        indi_rank_min = final_weight.loc[individuals, 'rank_min'].mean()
+        metric_i = pd.DataFrame(np.array([[TPR, sparsity, indi_weight, indi_rank_ave, indi_rank_min] + metric_i]),
+                                columns=['top-TPR', 'sparsity', 'indi_abs_w_mean', 'indi_rank_ave', 'indi_rank_min',
+                                         'acc', 'roc_auc', 'recall', 'precision', 'f1score', 'specificity'])
 
     return final_weight, metric_i
 
 
-def performance_app(sco, data, fea_info, top_num=50):
-    fea_name = fea_info['IlmnID'].values.tolist()
-    fea_idxes = np.arange(len(fea_name))
-    locs = fea_info['MAPINFO'].values.astype(float).astype(int)
+def performance_app(sco, data, fea_info, top_num=50, descending=True, choice=0):
+    if 'IlmnID' in fea_info.columns:
+        fea_name = fea_info['IlmnID'].values.tolist()
+        locs = fea_info['MAPINFO'].values.astype(float).astype(int)
+    elif 'probe' in fea_info.columns:
+        fea_name = fea_info['probe'].values.tolist()
+        locs = fea_info['start'].values.astype(int)
+    else:
+        raise ValueError(fea_info.columns[:4])
     gp_info = fea_info['gp_idx'].values.astype(int)
+    fea_idxes = np.arange(len(fea_name))
 
     sco.columns = ['index', 'final_weight']
-#     sco['index'] = sco['index'] + 1
     sco.insert(loc=2, column='abs_weight', value=abs(sco['final_weight']))
-    sco_rank = sco.sort_values(['abs_weight'], ascending=False, kind='mergesort').reset_index(drop=True)
-
-#     slc_idx = np.hstack([sco_rank['index'][:top_num], sco_rank['index'][top_num]])
+    if choice == 1:
+        sco.insert(loc=3, column='rank_ave', value=rank_vector(sco['abs_weight'], 'ave', descending))
+        sco.insert(loc=4, column='rank_min', value=rank_vector(sco['abs_weight'], 'min', descending))
+    sco_rank = sco.sort_values(['abs_weight'], ascending=not descending, kind='mergesort').reset_index(drop=True)
     slc_idx = sco_rank['index'][:top_num]
 
     if data is None:
@@ -438,11 +461,22 @@ def performance_app(sco, data, fea_info, top_num=50):
     else:
         df_all_eval, info = eval_6clf(slc_idx, fea_name, fea_idxes, locs, gp_info, data)
     info = pd.merge(info, sco, left_on='fea_ind', right_on='index').drop(['index'], axis=1, inplace=False)
+
+    min_ = np.nanmin(info['abs_weight'])
+    max_ = np.nanmax(info['abs_weight'])
+    if descending:
+        value = [np.nan if np.isnan(x) else (x - min_) / (max_ - min_) for x in info['abs_weight']]
+    else:
+        value = [np.nan if np.isnan(x) else (max_ - x) / (max_ - min_) for x in info['abs_weight']]
     info.insert(loc=list(info.columns).index('abs_weight') + 1,
                 column='abs_weight_normalize',
-                value=info[['abs_weight']].apply(lambda x: (x - np.min(x)) / (np.max(x) - np.min(x)), axis=0))
+                value=value)
 
     sparsity = np.sum(info['abs_weight'] > 0) / len(info)
+    if 'gene' in fea_info.columns:
+        info.insert(loc=list(info.columns).index('fea_name') + 1,
+                    column='gene',
+                    value=fea_info['gene'].values)
 
     return df_all_eval, info, sparsity
 
@@ -454,7 +488,10 @@ def group_check(fea_info, final_weight):
     df.loc[np.where(df[['isol_01']] == 1)[0], 'true_01'] = 2
     df.drop(['index', 'fea_name', 'loc', 'beta'], axis=1, inplace=True)
 
-    df = pd.concat([df, final_weight[['abs_weight', 'abs_weight_normalize']]], axis=1)
+    if 'rank_ave' in final_weight.columns:
+        df = pd.concat([df, final_weight[['abs_weight', 'abs_weight_normalize', 'rank_ave', 'rank_min']]], axis=1)
+    else:
+        df = pd.concat([df, final_weight[['abs_weight', 'abs_weight_normalize']]], axis=1)
 
     df_groupby1 = df.groupby(['true_01', 'gp_label']).mean()
     df_groupby2 = df.groupby(['gp_label', 'true_01']).mean()
