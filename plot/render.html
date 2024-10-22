@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+                <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/themes/westeros.js"></script>
+
+</head>
+<body >
+    <div id="fd17e1f4c1564a64b16ee2e284af5599" class="chart-container" style="width:300px; height:540px; text-align:center; margin: auto"></div>
+    <script>
+        var chart_fd17e1f4c1564a64b16ee2e284af5599 = echarts.init(
+            document.getElementById('fd17e1f4c1564a64b16ee2e284af5599'), 'westeros', {renderer: 'svg'});
+        var option_fd17e1f4c1564a64b16ee2e284af5599 = {
+    "animation": false,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "sankey",
+            "name": "sankey",
+            "data": [
+                {
+                    "name": "w/o C"
+                },
+                {
+                    "name": "w C"
+                },
+                {
+                    "name": "w/o C only"
+                },
+                {
+                    "name": "w C only"
+                },
+                {
+                    "name": "both"
+                },
+                {
+                    "name": "CASC15"
+                },
+                {
+                    "name": "EGFR"
+                },
+                {
+                    "name": "JAZF1"
+                },
+                {
+                    "name": "KCNQ1DN"
+                },
+                {
+                    "name": "Kir2.2"
+                },
+                {
+                    "name": "Kv1.1"
+                },
+                {
+                    "name": "MPPED1"
+                },
+                {
+                    "name": "NSP"
+                },
+                {
+                    "name": "NgR3"
+                },
+                {
+                    "name": "RASGEF1A"
+                },
+                {
+                    "name": "SAMD4A"
+                },
+                {
+                    "name": "WIPI2"
+                }
+            ],
+            "links": [
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 7
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 9
+                },
+                {
+                    "source": "both",
+                    "target": "CASC15",
+                    "value": 7
+                },
+                {
+                    "source": "both",
+                    "target": "CASC15",
+                    "value": 9
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 15
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 15
+                },
+                {
+                    "source": "both",
+                    "target": "EGFR",
+                    "value": 15
+                },
+                {
+                    "source": "both",
+                    "target": "EGFR",
+                    "value": 15
+                },
+                {
+                    "source": "w/o C",
+                    "target": "w/o C only",
+                    "value": 2
+                },
+                {
+                    "source": "w/o C only",
+                    "target": "JAZF1",
+                    "value": 2
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 1
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 2
+                },
+                {
+                    "source": "both",
+                    "target": "KCNQ1DN",
+                    "value": 1
+                },
+                {
+                    "source": "both",
+                    "target": "KCNQ1DN",
+                    "value": 2
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 6
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 6
+                },
+                {
+                    "source": "both",
+                    "target": "Kir2.2",
+                    "value": 6
+                },
+                {
+                    "source": "both",
+                    "target": "Kir2.2",
+                    "value": 6
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 10
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 12
+                },
+                {
+                    "source": "both",
+                    "target": "Kv1.1",
+                    "value": 10
+                },
+                {
+                    "source": "both",
+                    "target": "Kv1.1",
+                    "value": 12
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 2
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 1
+                },
+                {
+                    "source": "both",
+                    "target": "MPPED1",
+                    "value": 2
+                },
+                {
+                    "source": "both",
+                    "target": "MPPED1",
+                    "value": 1
+                },
+                {
+                    "source": "w/o C",
+                    "target": "both",
+                    "value": 1
+                },
+                {
+                    "source": "w C",
+                    "target": "both",
+                    "value": 2
+                },
+                {
+                    "source": "both",
+                    "target": "NSP",
+                    "value": 1
+                },
+                {
+                    "source": "both",
+                    "target": "NSP",
+                    "value": 2
+                },
+                {
+                    "source": "w C",
+                    "target": "w C only",
+                    "value": 1
+                },
+                {
+                    "source": "w C only",
+                    "target": "NgR3",
+                    "value": 1
+                },
+                {
+                    "source": "w/o C",
+                    "target": "w/o C only",
+                    "value": 5
+                },
+                {
+                    "source": "w/o C only",
+                    "target": "RASGEF1A",
+                    "value": 5
+                },
+                {
+                    "source": "w C",
+                    "target": "w C only",
+                    "value": 2
+                },
+                {
+                    "source": "w C only",
+                    "target": "SAMD4A",
+                    "value": 2
+                },
+                {
+                    "source": "w/o C",
+                    "target": "w/o C only",
+                    "value": 1
+                },
+                {
+                    "source": "w/o C only",
+                    "target": "WIPI2",
+                    "value": 1
+                }
+            ],
+            "left": "1%",
+            "top": "1%",
+            "right": "25%",
+            "bottom": "1%",
+            "nodeWidth": 20,
+            "nodeGap": 8,
+            "nodeAlign": "justify",
+            "layoutIteration": 32,
+            "orient": "horizontal",
+            "draggable": true,
+            "emphasis": {
+                "focus": "none"
+            },
+            "label": {
+                "show": true,
+                "position": "right",
+                "color": "black",
+                "margin": 8,
+                "fontSize": 12,
+                "fontFamily": "Arial"
+            },
+            "lineStyle": {
+                "show": true,
+                "width": 1,
+                "opacity": 0.2,
+                "curveness": 0.5,
+                "type": "solid",
+                "color": "source"
+            },
+            "itemStyle": {}
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "sankey"
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderWidth": 1,
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "textStyle": {
+            "fontSize": 14
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "target": "blank",
+            "subtarget": "blank",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false
+        }
+    ]
+};
+        chart_fd17e1f4c1564a64b16ee2e284af5599.setOption(option_fd17e1f4c1564a64b16ee2e284af5599);
+    </script>
+</body>
+</html>
