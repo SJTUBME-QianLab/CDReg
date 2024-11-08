@@ -45,7 +45,7 @@ colors_dict = dict(zip(
 ))
 
 metric_dict = {
-    'acc': 'Accuracy', 'auc': 'AUC', 'f1score': 'F1-score', 'AUPRC': 'AUPRC', 'AUROC': 'AUROC'
+    'AUPRC': 'AUPRC', 'AUROC': 'AUROC', 'MCC': 'MCC',
 }
 data_dict = {
     'covGau_de1_b0.5': 'Gau',
@@ -63,7 +63,7 @@ def main():
         MetricSet = dict()
         for data_name in data_dict.keys():
             dfi = df_all[df_all['data'] == data_name]
-            for metric in ['acc', 'AUROC', 'AUPRC', 'indi', 'isol']:
+            for metric in ['AUROC', 'AUPRC', 'MCC', 'indi', 'isol']:
                 vv = CalMetric(dfi, metric)
                 MetricSet[f"{data_dict[data_name]}_{metric}"] = vv
         with open(os.path.join(eval_root, 'MetricSet.pkl'), 'wb') as f:
@@ -79,17 +79,17 @@ def main():
         MetricSet = pickle.load(f)
     head = 'Fig3b'
     config = {
-        'xlim': [0.922, 0.949], 'xticks': [0.93, 0.94], 'x0': 0.948, 'head': head,
+        'xlim': [0.45, 0.75], 'xticks': [0.5, 0.6, 0.7], 'x0': 0.75, 'head': head,
     }
-    plot_MetricBar(data, MetricSet, 'acc', config, pv='Ttest')
+    plot_MetricBar(data, MetricSet, 'AUROC', config, pv='Ttest')
     config = {
         'xlim': [0, 0.325], 'xticks': [0.1, 0.2, 0.3], 'x0': 0.3, 'head': head,
     }
     plot_MetricBar(data, MetricSet, 'AUPRC', config, pv='Ttest')
     config = {
-        'xlim': [0.45, 0.75], 'xticks': [0.5, 0.6, 0.7], 'x0': 0.75, 'head': head,
+        'xlim': [0, 0.27], 'xticks': [0, 0.1, 0.2], 'x0': 0.26, 'head': head,
     }
-    plot_MetricBar(data, MetricSet, 'AUROC', config, pv='Ttest')
+    plot_MetricBar(data, MetricSet, 'MCC', config, pv='Ttest')
 
     plot_box_indi(data.copy(), 'Fig3c')
     plot_box_isol(data.copy(), 'Fig3c')
@@ -133,7 +133,7 @@ def main():
     data = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
     for data_name in data_dict.keys():
         dfi = data[data['data'] == data_name]
-        for metric in ['acc', 'AUROC', 'AUPRC', 'indi', 'isol']:
+        for metric in ['AUROC', 'AUPRC', 'MCC', 'indi', 'isol']:
             cut = pd.DataFrame({
                 mm: dfi[dfi['method'] == mm][metric].values for mm in method_dict.values()
             })

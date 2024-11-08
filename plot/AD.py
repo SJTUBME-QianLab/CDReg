@@ -63,7 +63,7 @@ def main():
         prepare_for_clf_curve()
     ave = pd.read_excel(os.path.join(eval_root, 'folds_ave.xlsx'), sheet_name='svm_acc_ave')
     std = pd.read_excel(os.path.join(eval_root, 'folds_ave.xlsx'), sheet_name='svm_acc_std')
-    CLFCurve(ave, std, 'Fig5c_svm_acc', smooth=True, fill=True, dot=False)
+    CLFCurve(ave, std, 'Fig5c_svm_acc', smooth=True, fill=False, dot=False)
     ClfBarStd(std, 'Fig5d_svm_acc_BarStd')
 
 
@@ -314,8 +314,8 @@ def CLFCurve(df_mean, df_std, name, smooth=False, fill=False, dot=False):
     ax.set_xlim(0.5, top_num + 0.5)
     ax.set_xticks(ticks=np.linspace(start=1, stop=top_num, num=int(top_num/2)+1, endpoint=True))
     ax.set_xlabel('Number of Features', fontsize=12)
-    ax.set_ylim(0.605, 0.76)
-    ax.set_yticks(ticks=[0.6, 0.64, 0.68, 0.72, 0.76])
+    ax.set_ylim(0.62, 0.74)
+    ax.set_yticks(ticks=[0.64, 0.68, 0.72])
     ax.set_ylabel(metric_dict[name.split('_')[2]], fontsize=12)
     # ax.set_title(metric_dict[name.split('_')[1]], fontsize=12, weight='bold')
 
