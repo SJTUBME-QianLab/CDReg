@@ -27,9 +27,9 @@ plt.rcParams['mathtext.fontset'] = 'stix'
 
 eval_root = './simulation/'
 os.makedirs(eval_root, exist_ok=True)
-data_root = './../data/simulation/'
+# data_root = './../data/simulation/'
 result_root = './../results/'
-# data_root = '/home/data/tangxl/ContrastSGL/sim_data2/'
+data_root = '/home/data/tangxl/ContrastSGL/sim_data2/'
 # result_root = '/home/data/tangxl/ContrastSGL/results2'
 
 method_dict = {
@@ -45,104 +45,215 @@ colors_dict = dict(zip(
 ))
 
 metric_dict = {
-    'AUPRC': 'AUPRC', 'AUROC': 'AUROC', 'MCC': 'MCC',
+    'AUROC': 'AUROC', 'AUPRC': 'AUPRC', 'acc': 'Accuracy', 'BAcc': 'Balanced Accuracy',
+    'f1score': 'F1-score', 'MCC': 'MCC',
 }
 data_dict = {
     'covGau_de1_b0.5': 'Gau',
     'covLap2_de1_b0.5': 'Lap2',
 }
+tmp = {
+    'L10.4L210.05Ls1.2Lc0_lr0.0001': 'L10.4L210.05Lg1.2Lcon0_lr0.0001_0.2',
+    'L10.4L210.05Ls0Lc0.1_lr0.0001': 'L10.4L210.05Lg0Lcon0.1_lr0.0001_0.2',
+    'L10.4L210.05Ls1.2Lc0.1_lr0.0001': 'L10.4L210.05Lg1.2Lcon0.1_lr0.0001_0.2',
+}
 
 
 def main():
-    if not os.path.isfile(os.path.join(eval_root, 'all_results.csv')):
-        RawMetric()
+    # move_files()
+    """
+    # df_Gau1 = add_AUPRC('Gau1')
+    # df_Lap2 = add_AUPRC('Lap2')
+    # pd_writer = pd.ExcelWriter('./simulation/Add.xlsx')
+    # df_Gau1.to_excel(pd_writer, sheet_name='Gau1', index=False)
+    # df_Lap2.to_excel(pd_writer, sheet_name='Lap2', index=False)
+    # pd_writer.save()
 
-    if not os.path.isfile(os.path.join(eval_root, 'statistics.csv')):
-        df_all = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
-        df_all.rename(columns={'roc_auc': 'auc', 'indi_abs_w_mean': 'indi'}, inplace=True)
-        MetricSet = dict()
-        for data_name in data_dict.keys():
-            dfi = df_all[df_all['data'] == data_name]
-            for metric in ['AUROC', 'AUPRC', 'MCC', 'indi', 'isol']:
-                vv = CalMetric(dfi, metric)
-                MetricSet[f"{data_dict[data_name]}_{metric}"] = vv
-        with open(os.path.join(eval_root, 'MetricSet.pkl'), 'wb') as f:
-            pickle.dump(MetricSet, f)
+    # # acc and auc
+    # df_gau1 = pd.read_excel('./Results_Simu.xlsx', sheet_name='Gau1-rep10')
+    # end = df_gau1.columns.get_loc('data') + 1
+    # df_gau1 = df_gau1.iloc[:, :end].dropna(axis=0, inplace=False)
+    # df_gau1['method'] = df_gau1['method'].apply(lambda x: method_dict[x])
+    # df_Lap2 = pd.read_excel('./Results_Simu.xlsx', sheet_name='Lap2-rep10')
+    # df_Lap2 = df_Lap2.iloc[:, :end].dropna(axis=0, inplace=False)
+    # df_Lap2['method'] = df_Lap2['method'].apply(lambda x: method_dict[x])
+    # df_all = pd.concat([df_gau1, df_Lap2], axis=0).reset_index(drop=True)
+    #
+    # # For Double-check
+    # new = RawMetric()
+    # new = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
+    # new = pd.merge(df_all[['data_seed', 'method', 'data']], new, on=['data_seed', 'method', 'data'], how='inner').reset_index(drop=True)
+    # print(new.shape)
+    #
+    # inter = set(df_all.columns) & set(new.columns)
+    # print(inter, set(df_all.columns) - set(new.columns), set(new.columns) - set(df_all.columns))
+    # pd.testing.assert_frame_equal(df_all[inter], new[inter], check_dtype=False)
+    """
 
-        compilations = concat_metrics(MetricSet)
-        compilations.to_csv(os.path.join(eval_root, 'statistics.csv'), index=True)
+    # if not os.path.isfile(os.path.join(eval_root, 'all_results.csv')):
+    #     RawMetric()
+    #
+    # if not os.path.isfile(os.path.join(eval_root, 'statistics.csv')):
+    #     df_all = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
+    #     df_all.rename(columns={'indi_abs_w_mean': 'indi'}, inplace=True)
+    #     MetricSet = dict()
+    #     for data_name in data_dict.keys():
+    #         dfi = df_all[df_all['data'] == data_name]
+    #         for metric in ['AUROC', 'AUPRC', 'acc', 'BAcc', 'f1score', 'MCC', 'indi', 'isol']:
+    #             vv = CalMetric(dfi, metric)
+    #             MetricSet[f"{data_dict[data_name]}_{metric}"] = vv
+    #     with open(os.path.join(eval_root, 'MetricSet.pkl'), 'wb') as f:
+    #         pickle.dump(MetricSet, f)
+    #
+    #     compilations = concat_metrics(MetricSet)
+    #     compilations.to_csv(os.path.join(eval_root, 'statistics.csv'), index=True)
+    #
+    # if not os.path.isfile(os.path.join(eval_root, 'all_results_plot.csv')):
+    #     df_all = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
+    #     df_all.rename(columns={'indi_abs_w_mean': 'indi'}, inplace=True)
+    #     data = df_all[['data_seed', 'method', 'AUROC', 'AUPRC', 'acc', 'BAcc', 'indi', 'isol', 'data']]
+    #     data.to_csv(os.path.join(eval_root, 'all_results_plot.csv'), index=False)
 
-    # Existing files: all_results.csv, MetricSet.pkl, statistics.csv
+    # Existing files: all_results.csv, MetricSet.pkl, statistics.csv, all_results_plot.csv
 
-    data = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
-    with open(os.path.join(eval_root, 'MetricSet.pkl'), 'rb') as f:
-        MetricSet = pickle.load(f)
-    head = 'Fig3b'
-    config = {
-        'xlim': [0.45, 0.75], 'xticks': [0.5, 0.6, 0.7], 'x0': 0.75, 'head': head,
-    }
-    plot_MetricBar(data, MetricSet, 'AUROC', config, pv='Ttest')
-    config = {
-        'xlim': [0, 0.325], 'xticks': [0.1, 0.2, 0.3], 'x0': 0.3, 'head': head,
-    }
-    plot_MetricBar(data, MetricSet, 'AUPRC', config, pv='Ttest')
-    config = {
-        'xlim': [0, 0.27], 'xticks': [0, 0.1, 0.2], 'x0': 0.26, 'head': head,
-    }
-    plot_MetricBar(data, MetricSet, 'MCC', config, pv='Ttest')
+    # data = pd.read_csv(os.path.join(eval_root, 'all_results_plot.csv'))
+    # with open(os.path.join(eval_root, 'MetricSet.pkl'), 'rb') as f:
+    #     MetricSet = pickle.load(f)
+    # head = 'Fig3b'
+    # config = {
+    #     'xlim': [0.45, 0.75], 'xticks': [0.5, 0.6, 0.7], 'x0': 0.75, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'AUROC', config, pv='Ttest')
+    # config = {
+    #     'xlim': [0, 0.325], 'xticks': [0.1, 0.2, 0.3], 'x0': 0.3, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'AUPRC', config, pv='Ttest')
+    # config = {
+    #     'xlim': [0.922, 0.949], 'xticks': [0.93, 0.94], 'x0': 0.948, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'acc', config, pv='Ttest')
+    # config = {
+    #     'xlim': [0.47, 0.58], 'xticks': [0.50, 0.53, 0.56], 'x0': 0.57, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'BAcc', config, pv='Ttest')
+    # config = {
+    #     'xlim': [0.45, 0.62], 'xticks': [0.50, 0.55, 0.60], 'x0': 0.62, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'f1score', config, pv='Ttest')
+    # config = {
+    #     'xlim': [0, 0.27], 'xticks': [0, 0.1, 0.2], 'x0': 0.26, 'head': head,
+    # }
+    # plot_MetricBar(data, MetricSet, 'MCC', config, pv='Ttest')
 
-    plot_box_indi(data.copy(), 'Fig3c')
-    plot_box_isol(data.copy(), 'Fig3c')
+    # plot_box_indi(data.copy(), 'Fig3c')
+    # plot_box_isol(data.copy(), 'Fig3c')
 
-    # heatmaps of weights
-    data_name = 'covGau_de1_b0.5'
-    df1 = GetWeightIndi(data_name, 2027)
-    df1s = GetWeightIsol(data_name, 2027)
-    data_name = 'covLap2_de1_b0.5'
-    df2 = GetWeightIndi(data_name, 2027)
-    df2s = GetWeightIsol(data_name, 2027)
-    pd_writer = pd.ExcelWriter(os.path.join(eval_root, 'Fig3d.xlsx'))
-    df1.to_excel(pd_writer, sheet_name='d-indi_set1', index=False)
-    df1s.to_excel(pd_writer, sheet_name='d-isol_set1', index=False)
-    df2.to_excel(pd_writer, sheet_name='d-indi_set2', index=False)
-    df2s.to_excel(pd_writer, sheet_name='d-isol_set2', index=False)
-    pd_writer.save()
-    HeatmapIndiOne(df1, head='Fig3d', add=True)
-    HeatmapIndiOne(df2, head='Fig3d', add=False)
-    HeatmapIsolOne(df1s, head='Fig3d', add=True)
-    HeatmapIsolOne(df2s, head='Fig3d', add=False)
+    # # heatmaps of weights
+    # data_name = 'covGau_de1_b0.5'
+    # df1 = GetWeightIndi(data_name, 2027)
+    # df1s = GetWeightIsol(data_name, 2027)
+    # data_name = 'covLap2_de1_b0.5'
+    # df2 = GetWeightIndi(data_name, 2027)
+    # df2s = GetWeightIsol(data_name, 2027)
+    # pd_writer = pd.ExcelWriter(os.path.join(eval_root, 'Fig3d.xlsx'))
+    # df1.to_excel(pd_writer, sheet_name='d-indi_set1', index=False)
+    # df1s.to_excel(pd_writer, sheet_name='d-isol_set1', index=False)
+    # df2.to_excel(pd_writer, sheet_name='d-indi_set2', index=False)
+    # df2s.to_excel(pd_writer, sheet_name='d-isol_set2', index=False)
+    # pd_writer.save()
+    # HeatmapIndiOne(df1, head='Fig3d', add=True)
+    # HeatmapIndiOne(df2, head='Fig3d', add=False)
+    # HeatmapIsolOne(df1s, head='Fig3d', add=True)
+    # HeatmapIsolOne(df2s, head='Fig3d', add=False)
 
-    if not os.path.isfile(os.path.join(eval_root, 'variations.csv')):
-        concat_variation()
-    df_lap2 = pd.read_csv(os.path.join(eval_root, 'variations.csv'))
-    model_name = pd.read_csv(os.path.join(eval_root, 'variations_name.csv'), index_col=0)
-    RVave, RVstd, xy_data = RelativeVariation(df_lap2, model_name, 'acc')
-    ParamBubble(xy_data.copy(), head='FigS4', metric='acc')
-    xy_data.to_csv(os.path.join(eval_root, 'FigS4.csv'), index=False)
+    # parameter sensibility
+    """
+    # For Double-check
+    df_lap2_, model_name_ = concat_variation()
+    df_lap2_ = pd.read_csv(os.path.join(eval_root, 'variations.csv'))
+    model_name_ = pd.read_csv(os.path.join(eval_root, 'variations_name.csv'), index_col=0)
+    
+    df_lap2 = pd.read_excel('./Results_Simu.xlsx', sheet_name='stability-Lap2')
+    model_name = pd.read_excel('./Results_Simu.xlsx', sheet_name='stability-name')
+    model_name.index = model_name['variation']
+    model_name.drop(['variation'], axis=1, inplace=True)
+    
+    df_lap2 = pd.merge(df_lap2_[['data_seed', 'method']], df_lap2[['data_seed', 'method', 'acc']], how='inner')
+    pd.testing.assert_frame_equal(df_lap2, df_lap2_)
+    model_name.index = model_name_.index
+    model_name.columns = model_name_.columns
+    pd.testing.assert_frame_equal(model_name, model_name_)
+    """
 
-    # simulated correlation
-    head = 'covGau_de1_b0.5_seed2027'
-    dist = Simulate_corr(head)
-    ScatterDistCorr(dist, head='FigS5', setting=head[3:6])
-    head = 'covLap2_de1_b0.5_seed2027'
-    dist = Simulate_corr(head)
-    ScatterDistCorr(dist, head='FigS5', setting=head[3:6])
+    # if not os.path.isfile(os.path.join(eval_root, 'variations.csv')):
+    #     concat_variation()
+    # df_lap2 = pd.read_csv(os.path.join(eval_root, 'variations.csv'))
+    # model_name = pd.read_csv(os.path.join(eval_root, 'variations_name.csv'), index_col=0)
+    # metric = 'acc'
+    # RVave, RVstd, xy_data = RelativeVariation(df_lap2, model_name, metric)
+    # ParamBubble(xy_data.copy(), head='FigS4', metric=metric)
+    # xy_data.to_csv(os.path.join(eval_root, f'FigS4_Var{metric}.csv'), index=False)
+
+    # # simulated correlation
+    # head = 'covGau_de1_b0.5_seed2027'
+    # dist = Simulate_corr(head)
+    # ScatterDistCorr(dist, head='FigS5', setting=head[3:6])
+    # head = 'covLap2_de1_b0.5_seed2027'
+    # dist = Simulate_corr(head)
+    # ScatterDistCorr(dist, head='FigS5', setting=head[3:6])
 
     # Table remake
-    reset = pd.DataFrame()
-    data = pd.read_csv(os.path.join(eval_root, 'all_results.csv'))
-    for data_name in data_dict.keys():
-        dfi = data[data['data'] == data_name]
-        for metric in ['AUROC', 'AUPRC', 'MCC', 'indi', 'isol']:
-            cut = pd.DataFrame({
-                mm: dfi[dfi['method'] == mm][metric].values for mm in method_dict.values()
-            })
-            cut.columns = method_dict.values()
-            print(cut.shape)
-            cut['data'] = data_name
-            cut['metric'] = metric
-            reset = pd.concat([reset, cut], axis=0)
-    reset.to_csv(os.path.join(eval_root, 'Table_remake.csv'), index=False)
+    if not os.path.isfile(os.path.join(eval_root, 'Table_remake.csv')):
+        reset = pd.DataFrame()
+        data = pd.read_csv(os.path.join(eval_root, 'all_results_plot.csv'))
+        for data_name in data_dict.keys():
+            dfi = data[data['data'] == data_name]
+            for metric in ['acc', 'BAcc', 'AUROC', 'AUPRC', 'indi', 'isol']:
+                cut = pd.DataFrame({
+                    mm: dfi[dfi['method'] == mm][metric].values for mm in method_dict.values()
+                })
+                cut.columns = method_dict.values()
+                print(cut.shape)
+                cut['data'] = data_name
+                cut['metric'] = metric
+                reset = pd.concat([reset, cut], axis=0)
+        reset.to_csv(os.path.join(eval_root, 'Table_remake.csv'), index=False)
+
+
+# def add_AUPRC(head):
+#     df = pd.read_excel(os.path.join(eval_root, 'Results_Simu.xlsx'), sheet_name=head)
+#     for i in range(len(df)):
+#         data_seed, mm, s, data_name = df.loc[i, ['data_seed', 'method', 's', 'data']]
+#         data_head = f'{data_name}_seed{data_seed}'
+#         method = tmp[mm] if mm in tmp.keys() else mm
+#         final_weight = pd.read_excel(os.path.join(result_root, data_head, method, f's{s}', 'eval_FS.xlsx'),
+#                                      sheet_name='final_weight')
+#         prob_1 = final_weight['abs_weight_normalize']
+#         true = final_weight['TorF'].values
+#         pre, rec, _ = sklearn.metrics.precision_recall_curve(true, prob_1)
+#         AUPRC = sklearn.metrics.auc(rec, pre)
+#         df.loc[i, 'auprc'] = AUPRC
+#         df.loc[i, 'auroc'] = sklearn.metrics.roc_auc_score(true, prob_1)
+#     return df
+
+
+def move_files():
+    old = '/home/data/tangxl/ContrastSGL/sim_data2/'
+    new = '/home/tangxl/ContrastSGL/data/simulation/'
+    for pp in os.listdir(new):
+        for ff in os.listdir(os.path.join(new, pp)):
+            if ff.endswith('.csv'):
+                print(ff)
+                old_df = pd.read_csv(os.path.join(old, pp, ff), header=None)
+                new_df = pd.read_csv(os.path.join(new, pp, ff), header=None)
+                if isinstance(old_df, pd.Series):
+                    pd.testing.assert_series_equal(old_df, new_df)
+                else:
+                    pd.testing.assert_frame_equal(old_df, new_df)
+            elif ff.endswith('.npy'):
+                old_df = np.load(os.path.join(old, pp, ff))
+                new_df = np.load(os.path.join(new, pp, ff))
+                assert np.allclose(old_df, new_df)
 
 
 def RawMetric():
@@ -199,14 +310,15 @@ class GetResults:
         final_weight = pd.read_excel(os.path.join(self.root_dir, self.file_name), sheet_name='final_weight')
         prob_1 = final_weight['abs_weight_normalize']
         true = final_weight['TorF'].values
+        eval_FS.loc[0, 'AUROC'] = sklearn.metrics.roc_auc_score(true, prob_1)
         pre, rec, _ = sklearn.metrics.precision_recall_curve(true, prob_1)
         eval_FS.loc[0, 'AUPRC'] = sklearn.metrics.auc(rec, pre)
-        eval_FS.loc[0, 'AUROC'] = sklearn.metrics.roc_auc_score(true, prob_1)
+        eval_FS.loc[0, 'MCC'] = sklearn.metrics.matthews_corrcoef(true, prob_1 > 0.5)
+        eval_FS.loc[0, 'BAcc'] = sklearn.metrics.balanced_accuracy_score(true, prob_1 > 0.5)
         return eval_FS
 
     def group_check(self):
         evals = pd.read_excel(os.path.join(self.root_dir, self.file_name), sheet_name='group_check1')
-        # inef = evals.iloc[0:30, -1].mean(axis=0)
         true = evals.iloc[30:48, :]['abs_weight_normalize'].mean(axis=0)
         isol = evals.iloc[48:66, :]['abs_weight_normalize'].mean(axis=0)
 
@@ -225,7 +337,6 @@ class GetResults:
         evals = pd.read_excel(os.path.join(self.root_dir, self.file_name), sheet_name='group_check2')
         ineff = evals.iloc[[k + i * 22 for i in range(3) for k in range(19, 22)], :][['rank_ave', 'rank_min']].mean(axis=0)  # 8,9,10
         bias = evals.iloc[[k + i * 22 for i in range(3) for k in [7]], :][['rank_ave', 'rank_min']].mean(axis=0)  # 7
-        # group_mean = pd.DataFrame([true, isol, ineff, bias], index=['true', 'isol', 'inef', 'bias'])
         group_mean = pd.concat([true, isol, ineff, bias], axis=0)
         group_mean.index = [k1+k2 for k1, k2 in product(['true', 'isol', 'inef', 'bias'], ['Ave', 'Min'])]
         return group_mean
@@ -285,16 +396,16 @@ def TTestPV(aa, bb, alternative='two-sided'):
 
 def TTestPV_ind(aa, bb):
     var = scipy.stats.levene(aa, bb).pvalue
-    return scipy.stats.ttest_ind(aa, bb, equal_var=(var > 0.05)).pvalue
+    return scipy.stats.ttest_ind(aa, bb, equal_var=(var > 0.05)).pvalue  # p值大于0.05，说明满足方差相等
 
 
 def CalMetric(df, metric):
-    if metric in ['acc', 'AUROC', 'AUPRC']:
+    if metric in ['acc', 'f1score', 'MCC', 'BAcc', 'AUROC', 'AUPRC']:
         side = 'greater'
     elif metric in ['indi', 'isol']:
         side = 'less'
     else:
-        raise ValueError(metric)
+        raise ValueError(metric + 'greater or less')
     order = method_dict.values()
     dfV = df[['method', metric]]
     cal = pd.concat([
@@ -317,10 +428,7 @@ def plot_MetricBar(data, MetricSet, met, config, pv=False):
     # colors0 = sns.color_palette('Pastel1')
     # colors = colors0[1:5] + colors0[6:8] + [colors0[0]]
 
-    if met in ['acc']:
-        fig = plt.figure(figsize=((config['xlim'][1] - config['xlim'][0])*100, 5))
-    else:
-        fig = plt.figure(figsize=(2.5, 5))
+    fig = plt.figure(figsize=(2.5, 5))
     ax1 = plt.subplot(1, 1, 1)
 
     bar1 = sns.barplot(
@@ -341,11 +449,14 @@ def plot_MetricBar(data, MetricSet, met, config, pv=False):
     ax1.set_xticks(config['xticks'])
     ax1.set_xlabel('')
 
+    ax1.set_title(metric_dict[met], size=12, weight='bold')
     ax1.set_ylim(1.5, -0.5)
     ax1.set_ylabel('')
-    ax1.set_yticks(ticks=[0, 1], labels=['Setting 1', 'Setting 2'],
-                   rotation=90, verticalalignment='center')
-    ax1.set_title(metric_dict[met], size=12, weight='bold')
+    if met in ['AUROC']:
+        ax1.set_yticks(ticks=[0, 1], labels=['Setting 1', 'Setting 2'],
+                       rotation=90, verticalalignment='center')
+    else:
+        ax1.set_yticks(ticks=[0, 1], labels=[])
 
     ax1.tick_params(
         axis='both', labelsize=12, length=2, width=1.5,
@@ -357,7 +468,9 @@ def plot_MetricBar(data, MetricSet, met, config, pv=False):
     ax1.spines['right'].set_visible(False)
     ax1.spines['bottom'].set_linewidth(1.5)
     ax1.spines['top'].set_visible(False)
-    
+    if met == 'MCC':
+        ax1.spines['left'].set_position(('data', -0.04))
+
     ax1.set_facecolor('None')  # 透明背景
     for i in bar1.containers:
         bar1.bar_label(i, fmt='%.3f', padding=-40, fontsize=10)
@@ -400,13 +513,13 @@ def plot_method_legend(ColorSet, out_path, cols=1):
     import matplotlib.patches as mpatches
     handles = [mpatches.Patch(color=cc) for mm, cc in ColorSet.items()]
     leg_config = dict(
-        borderaxespad=0.2,
-        labelspacing=0.4,
-        handlelength=0.8,
-        columnspacing=0.8,
-        handletextpad=0.4,
-        borderpad=0,
-        frameon=False
+        borderaxespad=0.2,  # 图例和坐标轴之间的间距
+        labelspacing=0.4, # 图例条目之间的垂直空间
+        handlelength=0.8, # 图例条型的长度
+        columnspacing=0.8, # 图例列间距
+        handletextpad=0.4, # 图例条目与文字的距离
+        borderpad=0, # 图例周围空白处大小
+        frameon=False # 外框
     )
     fig_m = plt.figure(figsize=(3, 3))
     fig_m.set_facecolor('None')
@@ -536,8 +649,11 @@ def GetWeightIndi(data_name, seed):
         s = [int(kk.split('s')[1]) for kk in os.listdir(os.path.join(result_path0, mm))]
         assert len(s) == 1
         s = s[0]
+        # s = df_seeds[(df_seeds['data_seed'] == seed) & (df_seeds['method'] == method_dict[mm])]['s'].values
         fs = pd.read_excel(os.path.join(result_path0, mm, f's{int(s)}', 'eval_FS.xlsx'),
                            sheet_name='final_weight')
+        # fs = pd.read_excel(os.path.join(result_path0, tmp[mm] if mm in tmp.keys() else mm, f's{int(s)}', 'eval_FS.xlsx'),
+        #                    sheet_name='final_weight')
         fs_indi = fs.iloc[indi_idx, :]['abs_weight_normalize']
         fs_indi_dict[method_dict[mm]] = fs_indi
     head = fs.iloc[indi_idx, :5]
@@ -555,8 +671,11 @@ def GetWeightIsol(data_name, seed):
         s = [int(kk.split('s')[1]) for kk in os.listdir(os.path.join(result_path0, mm))]
         assert len(s) == 1
         s = s[0]
+        # s = df_seeds[(df_seeds['data_seed'] == seed) & (df_seeds['method'] == method_dict[mm])]['s'].values
         fs = pd.read_excel(os.path.join(result_path0, mm, f's{int(s)}', 'eval_FS.xlsx'),
                            sheet_name='final_weight')
+        # fs = pd.read_excel(os.path.join(result_path0, tmp[mm] if mm in tmp.keys() else mm, f's{int(s)}', 'eval_FS.xlsx'),
+        #                     sheet_name='final_weight')
         fs_indi = fs.iloc[isol_idx, :]['abs_weight_normalize']
         fs_indi_dict[method_dict[mm]] = fs_indi
     head = fs.iloc[isol_idx, :5]
@@ -754,7 +873,7 @@ def concat_variation():
     method_list = [raw_name] + model_name.values.flatten().tolist()
     for ss in data_seeds:
         res = concat_my(pre, ss, method_list=method_list)
-        metrics_seeds.append(res[['data_seed', 'method', 'acc']])
+        metrics_seeds.append(res[['data_seed', 'method'] + list(metric_dict.keys())])
     metrics_seeds = pd.concat(metrics_seeds, axis=0).reset_index(drop=True)
     metrics_seeds.to_csv(os.path.join(eval_root, 'variations.csv'), index=False)
     model_name.to_csv(os.path.join(eval_root, 'variations_name.csv'), index=True)
@@ -792,7 +911,7 @@ def ParamBubble(data, head, metric):
     
     ax1 = plt.subplot(1, 1, 1)
     a1 = ax1.scatter(
-        x=data['var'], y=data['method'], c=data[f'RV{metric}'].values, s=data[f'RV{metric}_std'].values*1000,
+        x=data['var'], y=data['method'], c=data[f'RV{metric}'].values, s=data[f'RV{metric}_std'].values * 1000,
         cmap=colormap, norm=normalize,
         edgecolor='black', linewidths=1, 
     )
@@ -802,7 +921,8 @@ def ParamBubble(data, head, metric):
         boundaries=np.linspace(vmin, vmax, 300, endpoint=True),
     )
     cb.ax.tick_params(labelsize=10)
-    
+    print(vmin, vmax)
+
     ax1.tick_params(
         axis='both', labelsize=12, length=0, #width=1.5,
         bottom=True, top=False, left=True, right=False,
@@ -822,8 +942,8 @@ def ParamBubble(data, head, metric):
     ax1.set_ylabel('Hyperparameter', fontsize=12)
     ax1.set_yticks([0, 1, 2, 3], ['$\lambda_1$', '$\lambda_2$', '$\lambda_S$', '$\lambda_C$'])
 
-    plt.savefig(os.path.join(eval_root, f'{head}_stability.png'), bbox_inches='tight', pad_inches=0.01)
-    plt.savefig(os.path.join(eval_root, f'{head}_stability.svg'), bbox_inches='tight', pad_inches=0.01)
+    plt.savefig(os.path.join(eval_root, f'{head}_sensitivity_{metric}.png'), bbox_inches='tight', pad_inches=0.01)
+    plt.savefig(os.path.join(eval_root, f'{head}_sensitivity_{metric}.svg'), bbox_inches='tight', pad_inches=0.01)
     # plt.show()
 
 
