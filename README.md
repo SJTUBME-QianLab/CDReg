@@ -56,7 +56,7 @@ conda activate environment
 
 ## LUAD-TCGA
 
-The LUAD dataset is obtained from TCGA through the UCSC Xena platform.
+The lung adenocarcinoma (LUAD) dataset is obtained from TCGA through the UCSC Xena platform.
 
 - Access the website: https://xenabrowser.net/datapages/?hub=https://tcga.xenahubs.net:443
 
@@ -74,7 +74,7 @@ The dataset used for independent testing is obtained from GEO accession numbered
 
 ## AD
 
-The AD dataset is obtained from the ADNI database: http://adni.loni.usc.edu . Access requires registration and requestion, which includes institutional support and justification of data use.
+The Alzheimer’s disease (AD) dataset is obtained from the ADNI database: http://adni.loni.usc.edu . Access requires registration and requestion, which includes institutional support and justification of data use.
 
 - Log in ADNI database
 
@@ -98,7 +98,7 @@ The AD dataset is obtained from the ADNI database: http://adni.loni.usc.edu . Ac
 
 ## PC
 
-The PC data profiled by WGBS was obtained from MethBank (https://ngdc.cncb.ac.cn/methbank/) with the Project ID HRA000099.
+The prostate cancer (PC) data profiled by WGBS was obtained from MethBank (https://ngdc.cncb.ac.cn/methbank/) with the Project ID HRA000099.
 
 - Download files using wget: `./preprocessing/PC/download.sh`
 
